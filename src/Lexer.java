@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-
 public class Lexer {
     private BufferedReader reader;
     private int currentChar;
@@ -36,20 +35,25 @@ public class Lexer {
                     while (currentChar != '\n' && currentChar != -1) {
                         advance();
                     }
+                    continue;
                 } else if (currentChar == '*') {
                     // Comentario de varias líneas
                     advance();
                     while (true) {
-                        if (currentChar == '*' && reader.read() == '/') {
+                        if (currentChar == '*') {
                             advance();
-                            break;
+                            if (currentChar == '/') {
+                                advance();
+                                break;
+                            }
+                        } else {
+                            advance();
                         }
-                        advance();
                     }
+                    continue;
                 } else {
                     return new Token(TokenType.DIVIDE, "/", lineNumber);
                 }
-                continue;
             }
 
             // Manejar números
@@ -74,10 +78,69 @@ public class Lexer {
                 return new Token(type, lexeme, lineNumber);
             }
 
-            // Manejar operadores y símbolos
-            // ... (agrega lógica para otros operadores)
-
-            // Carácter no reconocido
+            // Manejar operadores y símbolos especiales
+            switch (currentChar) {
+                case '+':
+                    advance();
+                    return new Token(TokenType.PLUS, "+", lineNumber);
+                case '-':
+                    advance();
+                    return new Token(TokenType.MINUS, "-", lineNumber);
+                case '*':
+                    advance();
+                    return new Token(TokenType.MULTIPLY, "*", lineNumber);
+                case '=':
+                    advance();
+                    if (currentChar == '=') {
+                        advance();
+                        return new Token(TokenType.EQUAL, "==", lineNumber);
+                    } else {
+                        return new Token(TokenType.ASSIGN, "=", lineNumber);
+                    }
+                case '!':
+                    advance();
+                    if (currentChar == '=') {
+                        advance();
+                        return new Token(TokenType.NOT_EQUAL, "!=", lineNumber);
+                    }
+                    break;
+                case '>':
+                    advance();
+                    if (currentChar == '=') {
+                        advance();
+                        return new Token(TokenType.GREATER_EQUAL, ">=", lineNumber);
+                    } else {
+                        return new Token(TokenType.GREATER_THAN, ">", lineNumber);
+                    }
+                case '<':
+                    advance();
+                    if (currentChar == '=') {
+                        advance();
+                        return new Token(TokenType.LESS_EQUAL, "<=", lineNumber);
+                    } else {
+                        return new Token(TokenType.LESS_THAN, "<", lineNumber);
+                    }
+                case ';':
+                    advance();
+                    return new Token(TokenType.SEMICOLON, ";", lineNumber);
+                case ',':
+                    advance();
+                    return new Token(TokenType.COMMA, ",", lineNumber);
+                case '(':
+                    advance();
+                    return new Token(TokenType.LEFT_PAREN, "(", lineNumber);
+                case ')':
+                    advance();
+                    return new Token(TokenType.RIGHT_PAREN, ")", lineNumber);
+                case '{':
+                    advance();
+                    return new Token(TokenType.LEFT_BRACE, "{", lineNumber);
+                case '}':
+                    advance();
+                    return new Token(TokenType.RIGHT_BRACE, "}", lineNumber);
+                default:
+                    throw new RuntimeException("Carácter no reconocido: '" + (char) currentChar + "' en la línea " + lineNumber);
+            }
             advance();
         }
         return new Token(TokenType.EOF, "", lineNumber);
@@ -109,4 +172,5 @@ public class Lexer {
         }
     }
 }
+
 
